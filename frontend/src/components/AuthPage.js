@@ -1,64 +1,96 @@
+// AuthPage.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
 
   const handleAuth = async () => {
     const url = isLogin ? '/api/v1/users/login' : '/api/v1/users/signup';
     try {
-      const response = await axios.post(url, { email, password });
-      alert('Success!');
-      console.log(response.data);
+      const payload = isLogin 
+        ? { email, password }
+        : { name, email, password };
+      
+      const { data } = await axios.post(url, payload);
+      localStorage.setItem('token', data.token);
+      navigate('/');
     } catch (error) {
-      console.error(error.response.data);
-      alert('Error: ' + error.response.data.message);
+      alert('Error: ' + error.response?.data?.message || 'Something went wrong');
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-3xl font-bold text-pink-700">
-        {isLogin ? 'Login' : 'Sign Up'}
-      </h1>
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        className="flex flex-col items-center mt-4"
-      >
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border rounded w-64 p-2 mb-4"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border rounded w-64 p-2 mb-4"
-        />
-        <button
-          onClick={handleAuth}
-          className="bg-pink-500 text-white py-2 px-4 rounded hover:bg-pink-400"
-        >
-          {isLogin ? 'Login' : 'Sign Up'}
-        </button>
-      </form>
-      <p
-        onClick={() => setIsLogin(!isLogin)}
-        className="mt-4 text-sm text-gray-600 cursor-pointer"
-      >
-        {isLogin
-          ? "Don't have an account? Sign up"
-          : 'Already have an account? Login'}
-      </p>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-96">
+        <h1 className="text-3xl font-bold text-pink-600 mb-6 text-center">
+          {isLogin ? 'Welcome Back!' : 'Create Account'}
+        </h1>
+        
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleAuth(); }}>
+          {!isLogin && (
+            <div>
+              <label className="block text-gray-700 mb-2">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              placeholder="hello@example.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-pink-600 text-white p-3 rounded-lg hover:bg-pink-700 transition-colors font-semibold"
+          >
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-gray-600">
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <button 
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-pink-600 hover:underline font-semibold"
+          >
+            {isLogin ? 'Sign Up' : 'Sign In'}
+          </button>
+        </p>
+      </div>
     </div>
   );
 };
 
 export default AuthPage;
-
